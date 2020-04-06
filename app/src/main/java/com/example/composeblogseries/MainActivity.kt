@@ -1,10 +1,13 @@
 package com.example.composeblogseries
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
+import androidx.ui.core.ContextAmbient
 import androidx.ui.core.Text
 import androidx.ui.core.setContent
+import androidx.ui.foundation.Clickable
 import androidx.ui.graphics.Color
 import androidx.ui.graphics.vector.drawVector
 import androidx.ui.layout.*
@@ -22,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
+                TweetView()
             }
         }
     }
@@ -104,62 +108,79 @@ fun PostTime(time: String) {
 // region action row contents
 @Composable
 fun ActionRow() {
+    val context = ContextAmbient.current
     Row(
         modifier = LayoutWidth.Fill + LayoutPadding(8.dp),
         arrangement = Arrangement.SpaceAround
     ){
-        Comment()
-        Retweet()
-        Like()
-        Share()
+        Comment {
+            Toast.makeText(context, "Clicked on comment", Toast.LENGTH_SHORT).show()
+        }
+        Retweet {
+            Toast.makeText(context, "Clicked on retweet", Toast.LENGTH_SHORT).show()
+        }
+        Like {
+            Toast.makeText(context, "Clicked on like", Toast.LENGTH_SHORT).show()
+        }
+        Share {
+            Toast.makeText(context, "Clicked on share", Toast.LENGTH_SHORT).show()
+        }
     }
 }
 
 @Composable
-fun Comment() {
-    val icon = vectorResource(R.drawable.ic_comment)
-    Container(
-            height = 24.dp,
-            width = 24.dp,
-            modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
-    ) {
+fun Comment(onClick : () -> Unit) {
+    Clickable(onClick = onClick) {
+        val icon = vectorResource(R.drawable.ic_comment)
+        Container(
+                height = 24.dp,
+                width = 24.dp,
+                modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
+        ) {
 
+        }
     }
 }
 
 @Composable
-fun Retweet() {
-    val icon = vectorResource(R.drawable.ic_retweet)
-    Container(
-            height = 24.dp,
-            width = 24.dp,
-            modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
-    ) {
+fun Retweet(onClick : () -> Unit) {
+    Clickable(onClick = onClick) {
+        val icon = vectorResource(R.drawable.ic_retweet)
+        Container(
+                height = 24.dp,
+                width = 24.dp,
+                modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
+        ) {
 
+        }
     }
 }
 
 @Composable
-fun Like() {
-    val icon = vectorResource(R.drawable.ic_like)
-    Container(
-            height = 24.dp,
-            width = 24.dp,
-            modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
-    ) {
+fun Like(onClick : () -> Unit) {
+    Clickable(onClick = onClick) {
+        val icon = vectorResource(R.drawable.ic_like)
+        Container(
+                height = 24.dp,
+                width = 24.dp,
+                modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
+        ) {
 
+        }
     }
 }
 
 @Composable
-fun Share() {
-    val icon = vectorResource(R.drawable.ic_share)
-    Container(
-            height = 24.dp,
-            width = 24.dp,
-            modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
-    ) {
+fun Share(onClick : () -> Unit) {
+    Clickable(onClick = onClick) {
+        val icon = vectorResource(R.drawable.ic_share)
+        Container(
+                height = 24.dp,
+                width = 24.dp,
+                modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
+        ) {
 
+        }
     }
 }
 // endregion
