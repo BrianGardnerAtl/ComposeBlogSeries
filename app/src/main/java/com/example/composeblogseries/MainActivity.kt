@@ -2,13 +2,16 @@ package com.example.composeblogseries
 
 import android.os.Bundle
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
+import androidx.compose.Model
 import androidx.ui.core.ContextAmbient
 import androidx.ui.core.Text
 import androidx.ui.core.setContent
 import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Icon
+import androidx.ui.foundation.selection.Toggleable
 import androidx.ui.graphics.Color
 import androidx.ui.graphics.vector.drawVector
 import androidx.ui.layout.*
@@ -32,7 +35,9 @@ class MainActivity : AppCompatActivity() {
             time = "7m",
             content = "This is a test tweet",
             commentCount = 100,
+            retweeted = false,
             retweetCount = 10,
+            liked = false,
             likeCount = 1000
         )
         setContent {
@@ -45,18 +50,40 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+@Model
 data class Tweet(
     val displayName: String,
     val handle: String,
     val time: String,
     val content: String,
-    val commentCount: Int,
-    val retweetCount: Int,
-    val likeCount: Int
+    var commentCount: Int,
+    var retweeted: Boolean,
+    var retweetCount: Int,
+    var liked: Boolean,
+    var likeCount: Int
 )
 
 @Composable
 fun TweetView(tweet: Tweet) {
+    val commentClick: (() -> Unit) = {
+        tweet.commentCount += 1
+    }
+    val retweetToggle: ((Boolean) -> Unit) = { retweet ->
+        tweet.retweeted = retweet
+        if (retweet) {
+            tweet.retweetCount = tweet.retweetCount + 1
+        } else {
+            tweet.retweetCount = tweet.retweetCount - 1
+        }
+    }
+    val likedToggle: ((Boolean) -> Unit) = { liked ->
+        tweet.liked = liked
+        if (liked) {
+            tweet.likeCount = tweet.likeCount + 1
+        } else {
+            tweet.likeCount = tweet.likeCount - 1
+        }
+    }
     Column {
         UserInfoRow(
             name = tweet.displayName,
@@ -66,8 +93,13 @@ fun TweetView(tweet: Tweet) {
         TweetContent(content = tweet.content)
         ActionRow(
             commentCount = tweet.commentCount,
+            commentClick = commentClick,
+            retweeted = tweet.retweeted,
             retweetCount = tweet.retweetCount,
-            likeCount = tweet.likeCount
+            onRetweetChanged = retweetToggle,
+            liked = tweet.liked,
+            likeCount = tweet.likeCount,
+            onLikeChanged = likedToggle
         )
     }
 }
@@ -137,23 +169,22 @@ fun PostTime(time: String) {
 @Composable
 fun ActionRow(
     commentCount: Int,
+    commentClick: (() -> Unit),
+    retweeted: Boolean,
     retweetCount: Int,
-    likeCount: Int
+    onRetweetChanged: (Boolean) -> Unit,
+    liked: Boolean,
+    likeCount: Int,
+    onLikeChanged: (Boolean) -> Unit
 ) {
     val context = ContextAmbient.current
     Row(
         modifier = LayoutWidth.Fill + LayoutPadding(8.dp),
         arrangement = Arrangement.SpaceAround
     ){
-        Comment(commentCount) {
-            Toast.makeText(context, "Clicked on comment", Toast.LENGTH_SHORT).show()
-        }
-        Retweet(retweetCount) {
-            Toast.makeText(context, "Clicked on retweet", Toast.LENGTH_SHORT).show()
-        }
-        Like(likeCount) {
-            Toast.makeText(context, "Clicked on like", Toast.LENGTH_SHORT).show()
-        }
+        Comment(commentCount, commentClick)
+        Retweet(retweetCount, retweeted, onRetweetChanged)
+        Like(likeCount, liked, onLikeChanged)
         Share {
             Toast.makeText(context, "Clicked on share", Toast.LENGTH_SHORT).show()
         }
@@ -186,53 +217,63 @@ fun Comment(count: Int, onClick : () -> Unit) {
     }
 }
 
+
 @Composable
-fun Retweet(count: Int, onClick : () -> Unit) {
+fun Retweet(count: Int, retweeted: Boolean, onValueChange: (Boolean) -> Unit) {
     Ripple(bounded = false) {
-        Clickable(onClick = onClick) {
-            val icon = vectorResource(R.drawable.ic_retweet)
-            Row {
-                Icon(
-                    icon = icon,
-                    modifier = LayoutSize(24.dp, 24.dp),
-                    tint = Color.LightGray
-                )
-                if (count > 0) {
-                    Text(
-                        text = "$count",
-                        modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            color = Color.LightGray
-                        )
-                    )
-                }
-            }
-        }
+        ToggleImage(
+            iconId = R.drawable.ic_retweet,
+            count = count,
+            checked = retweeted,
+            selectedColor = Color.Green,
+            onValueChange = onValueChange
+        )
     }
 }
 
 @Composable
-fun Like(count: Int, onClick : () -> Unit) {
+fun Like(count: Int, liked: Boolean, onValueChange: (Boolean) -> Unit) {
     Ripple(bounded = false) {
-        Clickable(onClick = onClick) {
-            val icon = vectorResource(R.drawable.ic_like)
-            Row {
-                Icon(
-                    icon = icon,
-                    modifier = LayoutSize(24.dp, 24.dp),
-                    tint = Color.LightGray
-                )
-                if (count > 0) {
-                    Text(
-                        text = "$count",
-                        modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            color = Color.LightGray
-                        )
+        ToggleImage(
+            iconId = R.drawable.ic_retweet,
+            count = count,
+            checked = liked,
+            selectedColor = Color.Red,
+            onValueChange = onValueChange
+        )
+    }
+}
+
+@Composable
+fun ToggleImage(
+    @DrawableRes iconId: Int,
+    count: Int,
+    checked: Boolean,
+    selectedColor: Color,
+    onValueChange: ((Boolean) -> Unit)
+) {
+    val icon = vectorResource(iconId)
+    val color = if (checked) {
+        selectedColor
+    } else {
+        Color.LightGray
+    }
+    Toggleable(value = checked, onValueChange = onValueChange) {
+        Row {
+            Icon(
+                icon = icon,
+                modifier = LayoutSize(24.dp, 24.dp),
+                tint = color
+            )
+            if (count > 0) {
+                Text(
+                    text = "$count",
+                    modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
+                    style = TextStyle(
+                        color = color,
+                        fontSize = 18.sp
                     )
-                }
+                )
             }
         }
     }
@@ -265,7 +306,9 @@ fun TwitterPreview() {
         time = "7m",
         content = "This is a test tweet",
         commentCount = 100,
+        retweeted = false,
         retweetCount = 10,
+        liked = false,
         likeCount = 1000
     )
     MaterialTheme {
