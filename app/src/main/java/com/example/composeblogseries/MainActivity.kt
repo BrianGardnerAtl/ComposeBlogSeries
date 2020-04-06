@@ -6,18 +6,17 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.*
 import androidx.ui.core.ContextAmbient
-import androidx.ui.core.Text
+import androidx.ui.core.Modifier
 import androidx.ui.core.setContent
 import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Icon
+import androidx.ui.foundation.Text
 import androidx.ui.foundation.selection.Toggleable
 import androidx.ui.graphics.Color
-import androidx.ui.graphics.vector.drawVector
 import androidx.ui.layout.*
-import androidx.ui.material.Button
 import androidx.ui.material.IconButton
 import androidx.ui.material.MaterialTheme
-import androidx.ui.material.ripple.Ripple
+import androidx.ui.material.ripple.ripple
 import androidx.ui.res.vectorResource
 import androidx.ui.text.TextStyle
 import androidx.ui.text.font.FontWeight
@@ -125,7 +124,7 @@ fun TweetContent(content: String) {
             color = Color.Black,
             fontSize = 12.sp
         ),
-        modifier = LayoutPadding(8.dp)
+        modifier = Modifier.padding(8.dp)
     )
 }
 
@@ -133,7 +132,7 @@ fun TweetContent(content: String) {
 @Composable
 fun UserInfoRow(name: String, handle: String, time: String) {
     Row(
-        modifier = LayoutPadding(8.dp)
+        modifier = Modifier.padding(8.dp)
     ) {
         DisplayName(name)
         Handle(handle)
@@ -145,7 +144,7 @@ fun UserInfoRow(name: String, handle: String, time: String) {
 fun DisplayName(name: String) {
     Text(
         text = name,
-        modifier = LayoutPadding(0.dp, 0.dp, 8.dp, 0.dp),
+        modifier = Modifier.padding(0.dp, 0.dp, 8.dp, 0.dp),
         style = TextStyle(
             color = Color.Black,
             fontSize = 12.sp,
@@ -158,7 +157,7 @@ fun DisplayName(name: String) {
 fun Handle(handle: String) {
     Text(
         text = handle,
-        modifier = LayoutPadding(0.dp, 0.dp, 8.dp, 0.dp),
+        modifier = Modifier.padding(0.dp, 0.dp, 8.dp, 0.dp),
         style = TextStyle(
             color = Color.DarkGray,
             fontSize = 12.sp
@@ -192,7 +191,7 @@ fun ActionRow(
 ) {
     val context = ContextAmbient.current
     Row(
-        modifier = LayoutWidth.Fill + LayoutPadding(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
         arrangement = Arrangement.SpaceAround
     ){
         Comment(commentCount, commentClick)
@@ -206,25 +205,26 @@ fun ActionRow(
 
 @Composable
 fun Comment(count: Int, onClick : () -> Unit) {
-    Ripple(bounded = false) {
-        Clickable(onClick = onClick) {
-            val icon = vectorResource(R.drawable.ic_comment)
-            Row {
-                Icon(
-                    icon = icon,
-                    modifier = LayoutSize(24.dp, 24.dp),
-                    tint = Color.LightGray
-                )
-                if (count > 0) {
-                    Text(
-                        text = "$count",
-                        modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            color = Color.LightGray
-                        )
+    Clickable(
+        onClick = onClick,
+        modifier = Modifier.ripple(bounded = false)
+    ) {
+        val icon = vectorResource(R.drawable.ic_comment)
+        Row {
+            Icon(
+                asset = icon,
+                modifier = Modifier.preferredSize(24.dp),
+                tint = Color.LightGray
+            )
+            if (count > 0) {
+                Text(
+                    text = "$count",
+                    modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        color = Color.LightGray
                     )
-                }
+                )
             }
         }
     }
@@ -233,28 +233,24 @@ fun Comment(count: Int, onClick : () -> Unit) {
 
 @Composable
 fun Retweet(count: Int, retweeted: Boolean, onValueChange: (Boolean) -> Unit) {
-    Ripple(bounded = false) {
-        ToggleImage(
-            iconId = R.drawable.ic_retweet,
-            count = count,
-            checked = retweeted,
-            selectedColor = Color.Green,
-            onValueChange = onValueChange
-        )
-    }
+    ToggleImage(
+        iconId = R.drawable.ic_retweet,
+        count = count,
+        checked = retweeted,
+        selectedColor = Color.Green,
+        onValueChange = onValueChange
+    )
 }
 
 @Composable
 fun Like(count: Int, liked: Boolean, onValueChange: (Boolean) -> Unit) {
-    Ripple(bounded = false) {
-        ToggleImage(
-            iconId = R.drawable.ic_retweet,
-            count = count,
-            checked = liked,
-            selectedColor = Color.Red,
-            onValueChange = onValueChange
-        )
-    }
+    ToggleImage(
+        iconId = R.drawable.ic_retweet,
+        count = count,
+        checked = liked,
+        selectedColor = Color.Red,
+        onValueChange = onValueChange
+    )
 }
 
 @Composable
@@ -271,17 +267,21 @@ fun ToggleImage(
     } else {
         Color.LightGray
     }
-    Toggleable(value = checked, onValueChange = onValueChange) {
+    Toggleable(
+        value = checked,
+        modifier = Modifier.ripple(bounded = false),
+        onValueChange = onValueChange
+    ) {
         Row {
             Icon(
-                icon = icon,
-                modifier = LayoutSize(24.dp, 24.dp),
+                asset = icon,
+                modifier = Modifier.preferredSize(24.dp),
                 tint = color
             )
             if (count > 0) {
                 Text(
                     text = "$count",
-                    modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
+                    modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
                     style = TextStyle(
                         color = color,
                         fontSize = 18.sp
@@ -297,11 +297,11 @@ fun Share(onClick : () -> Unit) {
     val icon = vectorResource(R.drawable.ic_share)
     IconButton(
         onClick = onClick,
-        modifier = LayoutSize(24.dp, 24.dp)
+        modifier = Modifier.preferredSize(24.dp)
     ) {
         Icon(
-            icon = icon,
-            modifier = LayoutSize(24.dp, 24.dp),
+            asset = icon,
+            modifier = Modifier.preferredSize(24.dp),
             tint = Color.LightGray
         )
     }
@@ -309,7 +309,6 @@ fun Share(onClick : () -> Unit) {
 // endregion
 
 // region preview functions
-
 @Preview
 @Composable
 fun TwitterPreview() {
