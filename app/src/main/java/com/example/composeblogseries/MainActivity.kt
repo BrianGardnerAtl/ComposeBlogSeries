@@ -23,24 +23,49 @@ import androidx.ui.unit.sp
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val tweet = Tweet(
+            displayName = "Brian Gardner",
+            handle = "@BrianGardnerDev",
+            time = "7m",
+            content = "This is a test tweet",
+            commentCount = 100,
+            retweetCount = 10,
+            likeCount = 1000
+        )
         setContent {
             MaterialTheme {
-                TweetView()
+                TweetView(
+                        tweet
+                )
             }
         }
     }
 }
 
+data class Tweet(
+    val displayName: String,
+    val handle: String,
+    val time: String,
+    val content: String,
+    val commentCount: Int,
+    val retweetCount: Int,
+    val likeCount: Int
+)
+
 @Composable
-fun TweetView() {
+fun TweetView(tweet: Tweet) {
     Column {
         UserInfoRow(
-            name = "Brian Gardner",
-            handle = "@BrianGardnerDev",
-            time = "7m"
+            name = tweet.displayName,
+            handle = tweet.handle,
+            time = tweet.time
         )
-        TweetContent(content = "Sample tweet content")
-        ActionRow()
+        TweetContent(content = tweet.content)
+        ActionRow(
+            commentCount = tweet.commentCount,
+            retweetCount = tweet.retweetCount,
+            likeCount = tweet.likeCount
+        )
     }
 }
 
@@ -107,19 +132,23 @@ fun PostTime(time: String) {
 
 // region action row contents
 @Composable
-fun ActionRow() {
+fun ActionRow(
+    commentCount: Int,
+    retweetCount: Int,
+    likeCount: Int
+) {
     val context = ContextAmbient.current
     Row(
         modifier = LayoutWidth.Fill + LayoutPadding(8.dp),
         arrangement = Arrangement.SpaceAround
     ){
-        Comment {
+        Comment(commentCount) {
             Toast.makeText(context, "Clicked on comment", Toast.LENGTH_SHORT).show()
         }
-        Retweet {
+        Retweet(retweetCount) {
             Toast.makeText(context, "Clicked on retweet", Toast.LENGTH_SHORT).show()
         }
-        Like {
+        Like(likeCount) {
             Toast.makeText(context, "Clicked on like", Toast.LENGTH_SHORT).show()
         }
         Share {
@@ -129,43 +158,79 @@ fun ActionRow() {
 }
 
 @Composable
-fun Comment(onClick : () -> Unit) {
+fun Comment(count: Int, onClick : () -> Unit) {
     Clickable(onClick = onClick) {
         val icon = vectorResource(R.drawable.ic_comment)
-        Container(
+        Row {
+            Container(
                 height = 24.dp,
                 width = 24.dp,
                 modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
-        ) {
+            ) {
 
+            }
+            if (count > 0) {
+                Text(
+                    text = "$count",
+                    modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        color = Color.LightGray
+                    )
+                )
+            }
         }
     }
 }
 
 @Composable
-fun Retweet(onClick : () -> Unit) {
+fun Retweet(count: Int, onClick : () -> Unit) {
     Clickable(onClick = onClick) {
         val icon = vectorResource(R.drawable.ic_retweet)
-        Container(
+        Row {
+            Container(
                 height = 24.dp,
                 width = 24.dp,
                 modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
-        ) {
+            ) {
 
+            }
+            if (count > 0) {
+                Text(
+                    text = "$count",
+                    modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        color = Color.LightGray
+                    )
+                )
+            }
         }
     }
 }
 
 @Composable
-fun Like(onClick : () -> Unit) {
+fun Like(count: Int, onClick : () -> Unit) {
     Clickable(onClick = onClick) {
         val icon = vectorResource(R.drawable.ic_like)
-        Container(
+        Row {
+            Container(
                 height = 24.dp,
                 width = 24.dp,
                 modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
-        ) {
+            ) {
 
+            }
+            if (count > 0) {
+                Text(
+                    text = "$count",
+                    modifier = LayoutPadding(8.dp, 0.dp, 0.dp, 0.dp),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        color = Color.LightGray
+                    )
+                )
+            }
         }
     }
 }
@@ -175,9 +240,9 @@ fun Share(onClick : () -> Unit) {
     Clickable(onClick = onClick) {
         val icon = vectorResource(R.drawable.ic_share)
         Container(
-                height = 24.dp,
-                width = 24.dp,
-                modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
+            height = 24.dp,
+            width = 24.dp,
+            modifier = drawVector(vectorImage = icon, tintColor = Color.LightGray)
         ) {
 
         }
@@ -186,12 +251,23 @@ fun Share(onClick : () -> Unit) {
 // endregion
 
 // region preview functions
+
 @Preview
 @Composable
 fun TwitterPreview() {
+    val tweet = Tweet(
+        displayName = "Brian Gardner",
+        handle = "@BrianGardnerDev",
+        time = "7m",
+        content = "This is a test tweet",
+        commentCount = 100,
+        retweetCount = 10,
+        likeCount = 1000
+    )
     MaterialTheme {
-        TweetView()
-
+        TweetView(
+            tweet
+        )
     }
 }
 // endregion
