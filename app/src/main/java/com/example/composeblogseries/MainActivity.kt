@@ -4,8 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.Composable
-import androidx.compose.Model
+import androidx.compose.*
 import androidx.ui.core.ContextAmbient
 import androidx.ui.core.Text
 import androidx.ui.core.setContent
@@ -40,10 +39,11 @@ class MainActivity : AppCompatActivity() {
             liked = false,
             likeCount = 1000
         )
+        val state = mutableStateOf(tweet, ReferentiallyEqual)
         setContent {
             MaterialTheme {
                 TweetView(
-                        tweet
+                    state
                 )
             }
         }
@@ -56,33 +56,46 @@ data class Tweet(
     val handle: String,
     val time: String,
     val content: String,
-    var commentCount: Int,
-    var retweeted: Boolean,
-    var retweetCount: Int,
-    var liked: Boolean,
-    var likeCount: Int
+    val commentCount: Int,
+    val retweeted: Boolean,
+    val retweetCount: Int,
+    val liked: Boolean,
+    val likeCount: Int
 )
 
 @Composable
-fun TweetView(tweet: Tweet) {
+fun TweetView(state: MutableState<Tweet>) {
+    val tweet = state.value
     val commentClick: (() -> Unit) = {
-        tweet.commentCount += 1
+        val newCount = tweet.commentCount + 1
+        val newTweet = tweet.copy(
+            commentCount = newCount
+        )
+        state.value = newTweet
     }
     val retweetToggle: ((Boolean) -> Unit) = { retweet ->
-        tweet.retweeted = retweet
-        if (retweet) {
-            tweet.retweetCount = tweet.retweetCount + 1
+        val retweetCount = if (retweet) {
+            tweet.retweetCount + 1
         } else {
-            tweet.retweetCount = tweet.retweetCount - 1
+            tweet.retweetCount - 1
         }
+        val newTweet = tweet.copy(
+            retweeted = retweet,
+            retweetCount = retweetCount
+        )
+        state.value = newTweet
     }
     val likedToggle: ((Boolean) -> Unit) = { liked ->
-        tweet.liked = liked
-        if (liked) {
-            tweet.likeCount = tweet.likeCount + 1
+        val likeCount = if (liked) {
+            tweet.likeCount + 1
         } else {
-            tweet.likeCount = tweet.likeCount - 1
+            tweet.likeCount - 1
         }
+        val newTweet = tweet.copy(
+            liked = liked,
+            likeCount = likeCount
+        )
+        state.value = newTweet
     }
     Column {
         UserInfoRow(
@@ -311,9 +324,10 @@ fun TwitterPreview() {
         liked = false,
         likeCount = 1000
     )
+    val state = mutableStateOf(tweet, ReferentiallyEqual)
     MaterialTheme {
         TweetView(
-            tweet
+            state
         )
     }
 }
