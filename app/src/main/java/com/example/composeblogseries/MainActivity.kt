@@ -6,6 +6,7 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.*
 import androidx.ui.core.*
+import androidx.ui.foundation.AdapterList
 import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Icon
 import androidx.ui.foundation.Text
@@ -27,23 +28,11 @@ import androidx.ui.unit.sp
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val tweet = Tweet(
-            displayName = "Brian Gardner",
-            handle = "@BrianGardnerDev",
-            time = "7m",
-            content = "This is a test tweet",
-            commentCount = 100,
-            retweeted = false,
-            retweetCount = 10,
-            liked = false,
-            likeCount = 1000
-        )
-        val state = mutableStateOf(tweet, ReferentiallyEqual)
+        val tweetList = generateFakeTweetList()
+        val state = mutableStateOf(tweetList, StructurallyEqual)
         setContent {
             MaterialTheme {
-                TweetView(
-                    state
-                )
+                TweetList(state = state)
             }
         }
     }
@@ -63,39 +52,61 @@ data class Tweet(
 )
 
 @Composable
-fun TweetView(state: MutableState<Tweet>) {
-    val tweet = state.value
-    val commentClick: (() -> Unit) = {
-        val newCount = tweet.commentCount + 1
-        val newTweet = tweet.copy(
-            commentCount = newCount
-        )
-        state.value = newTweet
-    }
-    val retweetToggle: ((Boolean) -> Unit) = { retweet ->
-        val retweetCount = if (retweet) {
-            tweet.retweetCount + 1
-        } else {
-            tweet.retweetCount - 1
+fun TweetList(state: MutableState<MutableList<Tweet>>) {
+    val list = state.value
+    val context = ContextAmbient.current
+    AdapterList(
+        data = list,
+        modifier = Modifier.padding(8.dp)
+    ) { tweet ->
+        val index = list.indexOf(tweet)
+        val commentClick: (() -> Unit) = {
+            val newCount = tweet.commentCount + 1
+            val newTweet = tweet.copy(
+                commentCount = newCount
+            )
+            list[index] = newTweet
         }
-        val newTweet = tweet.copy(
-            retweeted = retweet,
-            retweetCount = retweetCount
-        )
-        state.value = newTweet
-    }
-    val likedToggle: ((Boolean) -> Unit) = { liked ->
-        val likeCount = if (liked) {
-            tweet.likeCount + 1
-        } else {
-            tweet.likeCount - 1
+        val retweetToggle: ((Boolean) -> Unit) = { retweet ->
+            val retweetCount = if (retweet) {
+                tweet.retweetCount + 1
+            } else {
+                tweet.retweetCount - 1
+            }
+            val newTweet = tweet.copy(
+                retweeted = retweet,
+                retweetCount = retweetCount
+            )
+            list[index] = newTweet
         }
-        val newTweet = tweet.copy(
-            liked = liked,
-            likeCount = likeCount
+        val likedToggle: ((Boolean) -> Unit) = { liked ->
+            val likeCount = if (liked) {
+                tweet.likeCount + 1
+            } else {
+                tweet.likeCount - 1
+            }
+            val newTweet = tweet.copy(
+                liked = liked,
+                likeCount = likeCount
+            )
+            list[index] = newTweet
+        }
+        TweetView(
+            tweet = tweet,
+            commentClick = commentClick,
+            retweetToggle = retweetToggle,
+            likedToggle = likedToggle
         )
-        state.value = newTweet
     }
+}
+
+@Composable
+fun TweetView(
+    tweet: Tweet,
+    commentClick: () -> Unit,
+    retweetToggle: (Boolean) -> Unit,
+    likedToggle: (Boolean) -> Unit
+) {
     Row {
         ProfileImage()
         Column {
@@ -248,7 +259,7 @@ fun Retweet(count: Int, retweeted: Boolean, onValueChange: (Boolean) -> Unit) {
 @Composable
 fun Like(count: Int, liked: Boolean, onValueChange: (Boolean) -> Unit) {
     ToggleImage(
-        iconId = R.drawable.ic_retweet,
+        iconId = R.drawable.ic_like,
         count = count,
         checked = liked,
         selectedColor = Color.Red,
@@ -333,21 +344,29 @@ fun ProfileImage() {
 @Preview
 @Composable
 fun TwitterPreview() {
+    val commentClick: (() -> Unit) = {
+    }
+    val retweetToggle: ((Boolean) -> Unit) = {
+    }
+    val likedToggle: ((Boolean) -> Unit) = {
+    }
     val tweet = Tweet(
         displayName = "Brian Gardner",
         handle = "@BrianGardnerDev",
         time = "7m",
-        content = "This is a test tweet",
+        content = "This is a test tweet to see how things get rendered in the preview",
         commentCount = 100,
         retweeted = false,
         retweetCount = 10,
         liked = false,
         likeCount = 1000
     )
-    val state = mutableStateOf(tweet, ReferentiallyEqual)
     MaterialTheme {
         TweetView(
-            state
+            tweet = tweet,
+            commentClick = commentClick,
+            retweetToggle = retweetToggle,
+            likedToggle = likedToggle
         )
     }
 }
@@ -359,4 +378,28 @@ fun TweetProfileImagePreview() {
         ProfileImage()
     }
 }
+
+@Preview
+@Composable
+fun TweetListPreview() {
+    val tweetList = generateFakeTweetList()
+    val state = mutableStateOf(tweetList, StructurallyEqual)
+    TweetList(state = state)
+}
 // endregion
+
+fun generateFakeTweetList(): MutableList<Tweet> {
+    return (0..100).map {
+        Tweet(
+            displayName = "Brian Gardner$it",
+            handle = "@BrianGardnerDev$it",
+            time = "7m",
+            content = "This is a test tweet to see how things get rendered in the preview",
+            commentCount = it*1,
+            retweeted = it%2==0,
+            retweetCount = it*10,
+            liked = it%2==1,
+            likeCount = it*100
+        )
+    }.toMutableList()
+}
