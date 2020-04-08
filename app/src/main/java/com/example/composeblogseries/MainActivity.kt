@@ -17,6 +17,7 @@ import androidx.ui.layout.*
 import androidx.ui.material.IconButton
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.Surface
+import androidx.ui.material.TopAppBar
 import androidx.ui.material.ripple.ripple
 import androidx.ui.res.vectorResource
 import androidx.ui.text.TextStyle
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         val state = mutableStateOf(tweetList, StructurallyEqual)
         setContent {
             MaterialTheme {
-                TweetList(state = state)
+                ListScreen(state = state)
             }
         }
     }
@@ -50,6 +51,33 @@ data class Tweet(
     val liked: Boolean,
     val likeCount: Int
 )
+
+@Composable
+fun ListScreen(state: MutableState<MutableList<Tweet>>) {
+    Column {
+        TweetBar()
+        TweetList(state)
+    }
+}
+
+@Composable
+fun TweetBar() {
+    TopAppBar(
+        title = {
+            Text("Tweetish")
+        },
+        navigationIcon = {
+            IconButton(onClick = {}) {
+                Icon(asset = vectorResource(id = R.drawable.ic_nav_drawer))
+            }
+        },
+        actions = {
+            IconButton(onClick = {}) {
+                Icon(asset = vectorResource(id = R.drawable.ic_add))
+            }
+        }
+    )
+}
 
 @Composable
 fun TweetList(state: MutableState<MutableList<Tweet>>) {
@@ -385,6 +413,12 @@ fun TweetListPreview() {
     val tweetList = generateFakeTweetList()
     val state = mutableStateOf(tweetList, StructurallyEqual)
     TweetList(state = state)
+}
+
+@Preview
+@Composable
+fun TweetBarPreview() {
+    TweetBar()
 }
 // endregion
 
