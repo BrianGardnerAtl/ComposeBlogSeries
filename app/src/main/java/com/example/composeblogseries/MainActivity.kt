@@ -69,6 +69,10 @@ fun ListScreen(state: MutableState<MutableList<Tweet>>) {
                 }
             }
         },
+        floatingActionButton = {
+            AddTweetButton()
+        },
+        floatingActionButtonPosition = Scaffold.FabPosition.End,
         drawerContent = {
             TweetNavigation()
         },
@@ -394,6 +398,21 @@ fun ProfileImage() {
             asset = defaultPhoto,
             modifier = Modifier.preferredSize(36.dp),
             tint = Color.LightGray
+        )
+    }
+}
+// endregion
+
+// region floating action button component
+@Composable
+fun AddTweetButton() {
+    val icon = vectorResource(id = R.drawable.ic_add)
+    val context = ContextAmbient.current
+    FloatingActionButton(onClick = {
+        Toast.makeText(context, "Clicked on FAB", Toast.LENGTH_SHORT).show()
+    }) {
+        Icon(
+            asset = icon
         )
     }
 }
