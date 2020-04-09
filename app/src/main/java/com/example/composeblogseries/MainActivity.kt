@@ -14,10 +14,7 @@ import androidx.ui.foundation.selection.Toggleable
 import androidx.ui.foundation.shape.corner.CircleShape
 import androidx.ui.graphics.Color
 import androidx.ui.layout.*
-import androidx.ui.material.IconButton
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Surface
-import androidx.ui.material.TopAppBar
+import androidx.ui.material.*
 import androidx.ui.material.ripple.ripple
 import androidx.ui.res.vectorResource
 import androidx.ui.text.TextStyle
@@ -54,20 +51,54 @@ data class Tweet(
 
 @Composable
 fun ListScreen(state: MutableState<MutableList<Tweet>>) {
+    val (scaffoldState, onScaffoldStateChange) = state {
+        ScaffoldState(
+            drawerState = DrawerState.Closed,
+            isDrawerGesturesEnabled = true
+        )
+    }
+
+    Scaffold(
+        scaffoldState = scaffoldState,
+        topAppBar = {
+            TweetBar {
+                if (scaffoldState.drawerState == DrawerState.Closed) {
+                    onScaffoldStateChange(ScaffoldState(DrawerState.Opened))
+                } else {
+                    onScaffoldStateChange(ScaffoldState(DrawerState.Closed))
+                }
+            }
+        },
+        drawerContent = {
+            TweetNavigation()
+        },
+        bodyContent = {
+            TweetList(state)
+        }
+    )
+}
+
+@Composable
+fun TweetNavigation() {
     Column {
-        TweetBar()
-        TweetList(state)
+        Text("Profile")
+        Text("Lists")
+        Text("Topics")
+        Text("Bookmarks")
+        Text("Moments")
+        Text("Settings and privacy")
+        Text("Help center")
     }
 }
 
 @Composable
-fun TweetBar() {
+fun TweetBar(navigationClick: () -> Unit) {
     TopAppBar(
         title = {
             Text("Tweetish")
         },
         navigationIcon = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = navigationClick) {
                 Icon(asset = vectorResource(id = R.drawable.ic_nav_drawer))
             }
         },
@@ -418,7 +449,7 @@ fun TweetListPreview() {
 @Preview
 @Composable
 fun TweetBarPreview() {
-    TweetBar()
+    TweetBar {}
 }
 // endregion
 
